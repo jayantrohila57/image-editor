@@ -1,6 +1,6 @@
 {
   "name": "wasm-image-editor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A high-performance web-based image editor built with Next.js and WebAssembly",
   "private": true,
   "keywords": [

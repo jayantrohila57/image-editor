@@ -1,55 +1,64 @@
 // WebAssembly Image Processing Worker
 // Enhanced worker with comprehensive error handling and debugging
 
-let wasmModule = null;
+import Module from "./image.js";
+
+let mod = null;
 let _isInitialized = false;
 
 // Load WebAssembly module
 async function loadWasm() {
   try {
-    console.log("[WORKER] Loading WebAssembly module...");
+    console.log("[WORKER] Initializing WebAssembly via image.js wrapper...");
 
-    // Import the WebAssembly module
-    const wasmUrl = new URL("image.wasm", import.meta.url);
-    const { default: wasmFunctions } = await import(wasmUrl);
+    mod = await Module();
 
-    wasmModule = wasmFunctions;
     _isInitialized = true;
-    console.log("[WORKER] WebAssembly module loaded successfully");
+    console.log("[WORKER] WebAssembly module initialized successfully");
     return true;
   } catch (error) {
-    console.error("[WORKER] Failed to load WebAssembly module:", error);
+    console.error("[WORKER] Failed to initialize WebAssembly module:", error);
     _isInitialized = false;
     return false;
   }
 }
 
 // Process image data with WebAssembly
-function processImage(data, type, value, job) {
+function processImage(buffer, type, value, job) {
   try {
-    if (!wasmModule) {
+    if (!mod) {
       throw new Error("WebAssembly module not loaded");
     }
 
     console.log(
-      `[WORKER] Processing ${type} filter with value ${value} for job ${job}`,
+      `[WORKER] Processing ${type} filter (val: ${value}) for job ${job}`,
     );
 
-    const buffer = new Uint8Array(data);
-    const result = wasmModule[type](buffer, buffer.length, value);
+    const size = buffer.byteLength;
+    const ptr = mod._malloc(size);
+    mod.HEAPU8.set(new Uint8Array(buffer), ptr);
 
-    if (result) {
-      console.log(`[WORKER] Successfully processed ${type} filter`);
-      return {
-        success: true,
-        job,
-        type,
-        buffer: result.buffer,
-        error: null,
-      };
-    } else {
-      throw new Error(`Failed to apply ${type} filter`);
+    // Call the specific WASM function
+    const fnName = `_${type}`;
+    if (typeof mod[fnName] !== "function") {
+      throw new Error(`WASM function ${fnName} not found`);
     }
+
+    mod[fnName](ptr, size, value);
+
+    const out = mod.HEAPU8.slice(ptr, ptr + size);
+    mod._free(ptr);
+
+    console.log(
+      `[WORKER] Successfully processed ${type} filter for job ${job}`,
+    );
+    return {
+      success: true,
+      job,
+      type,
+      buffer: out.buffer,
+      error: null,
+    };
   } catch (error) {
     console.error(`[WORKER] Error processing ${type} filter:`, error);
     return {
