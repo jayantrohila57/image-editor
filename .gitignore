@@ -43,11 +43,9 @@ next-env.d.ts
 # WebAssembly build artifacts
 *.wasm
 *.wasm.map
-*.js
-*.js.map
-
-# Emscripten build files
-emscripten-build/
+# Keep WASM worker files for deployment
+!public/wasm/*.js
+!public/wasm/*.js.map
 *.bc
 *.o
 

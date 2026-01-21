@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 type Filter = {
   key: string;
@@ -89,40 +90,94 @@ export default function Page() {
   const [values, setValues] = useState<Record<string, number>>(defaultValues);
   const [ready, setReady] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
 
   function getWorker() {
+    console.log("[DEBUG] Creating WebAssembly worker...");
     if (!workerRef.current) {
-      workerRef.current = new Worker("/wasm/worker.js", { type: "module" });
+      try {
+        workerRef.current = new Worker("/wasm/worker-enhanced.js", { type: "module" });
+        console.log("[DEBUG] Enhanced worker created successfully");
+      } catch (err) {
+        console.error("[ERROR] Failed to create worker:", err);
+        setError("Failed to initialize image processing worker");
+        return null;
+      }
+    } else {
+      console.log("[DEBUG] Reusing existing worker");
     }
     return workerRef.current;
   }
 
   function load(file: File) {
+    console.log("[DEBUG] Loading image:", file.name, file.size, file.type);
+    setLoading(true);
+    setError(null);
+    setDebugInfo(prev => [...prev, `Loading image: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`]);
+    
     const img = new Image();
     img.src = URL.createObjectURL(file);
 
     img.onload = () => {
-      const c = canvasRef.current!;
-      const ctx = c.getContext("2d")!;
-      c.width = img.width;
-      c.height = img.height;
-      ctx.drawImage(img, 0, 0);
+      try {
+        console.log("[DEBUG] Image loaded, dimensions:", img.width, "x", img.height);
+        const c = canvasRef.current!;
+        if (!c) {
+          throw new Error("Canvas reference not found");
+        }
+        
+        const ctx = c.getContext("2d");
+        if (!ctx) {
+          throw new Error("Failed to get 2D context");
+        }
+        
+        c.width = img.width;
+        c.height = img.height;
+        ctx.drawImage(img, 0, 0);
 
-      const base = ctx.getImageData(0, 0, img.width, img.height);
-      baseImage.current = base;
+        const base = ctx.getImageData(0, 0, img.width, img.height);
+        baseImage.current = base;
+        
+        console.log("[DEBUG] Base image data captured, length:", base.data.length);
+        
+        setValues(defaultValues);
+        setDirty(false);
+        setReady(true);
+        
+        ctx.putImageData(base, 0, 0);
+        
+        setDebugInfo(prev => [...prev, `Image loaded successfully: ${img.width}x${img.height}`]);
+        toast.success("Image loaded successfully");
+      } catch (err) {
+        console.error("[ERROR] Failed to load image:", err);
+        setError("Failed to load image");
+        toast.error("Failed to load image");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setValues(defaultValues);
-      setDirty(false);
-      setReady(true);
-
-      ctx.putImageData(base, 0, 0);
+    img.onerror = () => {
+      console.error("[ERROR] Failed to load image file");
+      setError("Failed to load image file - may be corrupted or unsupported format");
+      toast.error("Failed to load image file");
+      setLoading(false);
     };
   }
 
-  function applyAll(v: Record<string, number>) {
-    if (!baseImage.current) return;
+  const applyAll = useCallback((v: Record<string, number>) => {
+    console.log("[DEBUG] Applying filters:", Object.keys(v), v);
+    if (!baseImage.current) {
+      console.error("[ERROR] No base image loaded");
+      setError("No image loaded to apply filters to");
+      toast.error("Please load an image first");
+      return;
+    }
 
     const job = ++renderId.current;
+    console.log("[DEBUG] Starting render job:", job);
 
     const src = baseImage.current;
     const img = new ImageData(
@@ -132,18 +187,26 @@ export default function Page() {
     );
 
     const worker = getWorker();
+    if (!worker) {
+      setError("Image processing worker not available");
+      return;
+    }
+    
     let i = 0;
 
     const run = () => {
       const f = filters[i++];
       if (!f) {
         if (job === renderId.current) {
+          console.log("[DEBUG] All filters applied, updating canvas");
           canvasRef.current!.getContext("2d")!.putImageData(img, 0, 0);
         }
         return;
       }
 
       const amount = v[f.key];
+      console.log(`[DEBUG] Applying filter ${f.key}:`, amount);
+      
       if (amount === f.default) {
         run();
         return;
@@ -155,16 +218,32 @@ export default function Page() {
         value: amount,
         job,
       });
+    };
 
-      worker.onmessage = (e) => {
-        if (e.data.job !== job) return;
+    worker.onmessage = (e) => {
+      console.log(`[DEBUG] Worker response for job ${e.data.job}:`, e.data.type, e.data.success);
+      
+      if (e.data.job !== job) return;
+      
+      if (e.data.success) {
         img.data.set(new Uint8Array(e.data.buffer));
         run();
-      };
+        setDebugInfo(prev => [...prev, `Filter ${e.data.type} applied successfully`]);
+      } else {
+        console.error(`[ERROR] Filter ${e.data.type} failed:`, e.data.error);
+        setError(`Failed to apply ${e.data.type} filter`);
+        toast.error(`Failed to apply ${e.data.type} filter`);
+      }
+    };
+
+    worker.onerror = (err) => {
+      console.error("[ERROR] Worker error:", err);
+      setError("Image processing worker encountered an error");
+      toast.error("Image processing failed");
     };
 
     run();
-  }
+  }, [baseImage, filters, getWorker]);
 
   return (
     <div className="h-screen grid grid-cols-[1fr_360px] bg-background text-foreground">
@@ -172,19 +251,106 @@ export default function Page() {
       <div className="flex flex-col items-center justify-center bg-background p-8">
         {!ready && (
           <div className="w-full max-w-md space-y-4">
-            <div className="relative">
-              <input
-                type="file"
-                accept="image/*"
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                onChange={(e) => e.target.files && load(e.target.files[0])}
-              />
-              <Button className="w-full h-12 text-base font-medium">
-                Choose Image
-              </Button>
-            </div>
+            {/* Error Display */}
+            {error && (
+              <div className="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 bg-destructive rounded-full flex items-center justify-center">
+                    <span className="text-destructive-foreground text-sm font-bold">!</span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-destructive-foreground">Error</h3>
+                    <p className="text-destructive-foreground">{error}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Loading State */}
+            {loading && (
+              <div className="w-full max-w-md space-y-4">
+                <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin h-4 w-4 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-blue-500 text-sm font-bold">⟳</span>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-blue-700">Loading...</h3>
+                      <p className="text-blue-600">Processing your image</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Debug Information */}
+            {debugInfo.length > 0 && (
+              <div className="w-full max-w-md mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Debug Information</h3>
+                <div className="space-y-1 text-sm font-mono">
+                  {debugInfo.slice(-5).map((info, index) => (
+                    <div key={index} className="text-gray-600">{info}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Upload Interface */}
+            {!error && !loading && (
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      load(e.target.files[0]);
+                    }
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const div = e.currentTarget as HTMLElement;
+                    div.classList.add('border-blue-400', 'bg-blue-50');
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const div = e.currentTarget as HTMLElement;
+                    div.classList.remove('border-blue-400', 'bg-blue-50');
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const div = e.currentTarget as HTMLElement;
+                    div.classList.remove('border-blue-400', 'bg-blue-50');
+                    
+                    const files = e.dataTransfer.files;
+                    if (files && files[0]) {
+                      load(files[0]);
+                    } else {
+                      console.log('[DEBUG] No files dropped');
+                      toast.error('No valid image file dropped');
+                    }
+                  }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="text-center">
+                    <div className="mb-2">
+                      <svg className="w-8 h-8 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 014 4 0 0-4-4 0M7 20a2 2 0 012-2 2 0 01-2 2m0 6a2 2 0 012 2 2 0 01-2 2"/>
+                      </svg>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Drag & drop an image here</p>
+                    <p className="text-xs text-muted-foreground">or click to browse</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <p className="text-center text-sm text-muted-foreground">
-              Select an image to start editing
+              {!ready && !loading && !error && "Select an image to start editing"}
+              {ready && "Image loaded - adjust filters below"}
             </p>
           </div>
         )}
@@ -219,9 +385,9 @@ export default function Page() {
                   max={f.max}
                   step={f.step}
                   value={[values[f.key]]}
-                  disabled={!ready}
-                  onValueChange={([v]) => {
-                    const next = { ...values, [f.key]: v };
+                  disabled={!ready || loading}
+                  onClick={() => {
+                    const next = { ...values, [f.key]: f.default };
                     setValues(next);
                     setDirty(true);
                     applyAll(next);
@@ -249,11 +415,14 @@ export default function Page() {
 
           <Button
             variant="secondary"
-            disabled={!ready || !dirty}
+            disabled={!ready || !dirty || loading}
             onClick={() => {
+              console.log("[DEBUG] Resetting all filters");
               setValues(defaultValues);
               setDirty(false);
               applyAll(defaultValues);
+              setDebugInfo([]);
+              toast.success("All filters reset");
             }}
           >
             Reset All
