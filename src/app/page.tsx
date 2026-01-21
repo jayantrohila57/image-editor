@@ -83,6 +83,7 @@ const defaultValues = Object.fromEntries(
 
 export default function Page() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const hiddenCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const workerRef = useRef<Worker | null>(null);
   const baseImage = useRef<ImageData | null>(null);
   const renderId = useRef(0);
@@ -134,7 +135,7 @@ export default function Page() {
           "x",
           img.height,
         );
-        const c = canvasRef.current;
+        const c = canvasRef.current || hiddenCanvasRef.current;
         if (!c) {
           throw new Error("Canvas reference not found");
         }
@@ -475,6 +476,14 @@ export default function Page() {
             </p>
           </div>
         )}
+        
+        {/* Hidden canvas for image processing when not ready */}
+        <canvas
+          ref={hiddenCanvasRef}
+          className="hidden"
+          width={800}
+          height={600}
+        />
       </div>
 
       <Card className="rounded-none border-l border-border gap-2 bg-background">
