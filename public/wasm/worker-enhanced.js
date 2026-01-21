@@ -66,7 +66,7 @@ function processImage(data, type, value, job) {
 self.onmessage = async function (e) {
   console.log("[WORKER] Received message:", e.data);
 
-  const { type, buffer, value, job } = e.data;
+  const { type, buffer, value, job, prevAmount, currentAmount } = e.data;
 
   try {
     switch (type) {
@@ -87,7 +87,11 @@ self.onmessage = async function (e) {
         }
 
         const result = processImage(buffer, type, value, job);
-        self.postMessage(result);
+        self.postMessage({
+          ...result,
+          prevAmount,
+          currentAmount,
+        });
         break;
     }
   } catch (error) {
@@ -98,6 +102,8 @@ self.onmessage = async function (e) {
       type,
       buffer: null,
       error: error.message || "Unknown error",
+      prevAmount,
+      currentAmount,
     });
   }
 };

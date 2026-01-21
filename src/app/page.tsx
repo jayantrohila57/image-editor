@@ -93,6 +93,7 @@ export default function Page() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  const [filterHistory, setFilterHistory] = useState<string[]>([]);
 
   function getWorker() {
     console.log("[DEBUG] Creating WebAssembly worker...");
@@ -169,6 +170,8 @@ export default function Page() {
 
   const applyAll = useCallback((v: Record<string, number>) => {
     console.log("[DEBUG] Applying filters:", Object.keys(v), v);
+    console.log("[DEBUG] Previous values:", Object.keys(values).map(k => `${k}: ${values[k]}`));
+    
     if (!baseImage.current) {
       console.error("[ERROR] No base image loaded");
       setError("No image loaded to apply filters to");
@@ -205,7 +208,8 @@ export default function Page() {
       }
 
       const amount = v[f.key];
-      console.log(`[DEBUG] Applying filter ${f.key}:`, amount);
+      const prevAmount = values[f.key];
+      console.log(`[DEBUG] Applying filter ${f.key}:`, amount, `(previous: ${prevAmount})`);
       
       if (amount === f.default) {
         run();
@@ -217,6 +221,8 @@ export default function Page() {
         type: f.key,
         value: amount,
         job,
+        prevAmount: prevAmount,
+        currentAmount: amount,
       });
     };
 
@@ -228,7 +234,8 @@ export default function Page() {
       if (e.data.success) {
         img.data.set(new Uint8Array(e.data.buffer));
         run();
-        setDebugInfo(prev => [...prev, `Filter ${e.data.type} applied successfully`]);
+        setDebugInfo(prev => [...prev, `Filter ${e.data.type} applied successfully (${e.data.prevAmount} → ${e.data.currentAmount})`]);
+        setFilterHistory(prev => [...prev, `${new Date().toISOString()}: ${e.data.type} changed from ${e.data.prevAmount} to ${e.data.currentAmount}`]);
       } else {
         console.error(`[ERROR] Filter ${e.data.type} failed:`, e.data.error);
         setError(`Failed to apply ${e.data.type} filter`);
@@ -243,13 +250,13 @@ export default function Page() {
     };
 
     run();
-  }, [baseImage, filters, getWorker]);
+  }, [baseImage, filters, getWorker, values, filterHistory]);
 
   return (
     <div className="h-screen grid grid-cols-[1fr_360px] bg-background text-foreground">
       {/* Canvas */}
       <div className="flex flex-col items-center justify-center bg-background p-8">
-        {!ready && (
+        {!ready ? (
           <div className="w-full max-w-md space-y-4">
             {/* Error Display */}
             {error && (
@@ -286,10 +293,46 @@ export default function Page() {
             {/* Debug Information */}
             {debugInfo.length > 0 && (
               <div className="w-full max-w-md mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Debug Information</h3>
-                <div className="space-y-1 text-sm font-mono">
-                  {debugInfo.slice(-5).map((info, index) => (
-                    <div key={index} className="text-gray-600">{info}</div>
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-semibold text-gray-700">Debug Information</h3>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      setDebugInfo([]);
+                      toast.success("Debug log cleared");
+                    }}
+                  >
+                    Clear Log
+                  </Button>
+                </div>
+                <div className="space-y-1 text-sm font-mono max-h-32 overflow-y-auto">
+                  {debugInfo.map((info, index) => (
+                    <div key={index} className="text-gray-600 py-1 border-b border-gray-100 last:border-b-0">{info}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Filter History */}
+            {filterHistory.length > 0 && (
+              <div className="w-full max-w-md mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-semibold text-gray-700">Filter History</h3>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      setFilterHistory([]);
+                      toast.success("Filter history cleared");
+                    }}
+                  >
+                    Clear History
+                  </Button>
+                </div>
+                <div className="space-y-1 text-sm font-mono max-h-32 overflow-y-auto">
+                  {filterHistory.map((entry, index) => (
+                    <div key={index} className="text-gray-600 py-1 border-b border-gray-100 last:border-b-0">{entry}</div>
                   ))}
                 </div>
               </div>
@@ -334,30 +377,29 @@ export default function Page() {
                     }
                   }}
                 />
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="text-center">
-                    <div className="mb-2">
-                      <svg className="w-8 h-8 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 014 4 0 0-4-4 0M7 20a2 2 0 012-2 2 0 01-2 2m0 6a2 2 0 012 2 2 0 01-2 2"/>
-                      </svg>
-                    </div>
-                    <p className="text-sm text-muted-foreground">Drag & drop an image here</p>
-                    <p className="text-xs text-muted-foreground">or click to browse</p>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
+                  <div className="mb-4">
+                    <svg className="w-12 h-12 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 014 4 0 0-4-4 0M7 20a2 2 0 012-2 2 0 01-2 2m0 6a2 2 0 012 2 2 0 01-2 2" />
+                    </svg>
                   </div>
+                  <p className="text-lg font-medium text-gray-700 mb-2">Drag & drop an image here</p>
+                  <p className="text-sm text-muted-foreground">or click to browse</p>
                 </div>
               </div>
             )}
-            
+          </div>
+        ) : (
+          <div className="flex flex-col items-center">
+            <canvas
+              ref={canvasRef}
+              className="max-w-full max-h-full border border-border rounded-lg shadow-lg mb-4"
+            />
             <p className="text-center text-sm text-muted-foreground">
-              {!ready && !loading && !error && "Select an image to start editing"}
-              {ready && "Image loaded - adjust filters below"}
+              Image loaded - adjust filters below
             </p>
           </div>
         )}
-        <canvas
-          ref={canvasRef}
-          className={`max-w-full max-h-full border border-border rounded-lg shadow-lg ${ready ? "mt-8" : ""}`}
-        />
       </div>
 
       <Card className="rounded-none border-l border-border gap-2 bg-background">
@@ -390,6 +432,7 @@ export default function Page() {
                     const next = { ...values, [f.key]: f.default };
                     setValues(next);
                     setDirty(true);
+                    console.log(`[DEBUG] User clicked reset for ${f.key}, current value: ${values[f.key]}, resetting to: ${f.default}`);
                     applyAll(next);
                   }}
                 />
@@ -417,12 +460,13 @@ export default function Page() {
             variant="secondary"
             disabled={!ready || !dirty || loading}
             onClick={() => {
-              console.log("[DEBUG] Resetting all filters");
+              console.log("[DEBUG] User clicked reset all, current values:", Object.keys(values).map(k => `${k}: ${values[k]}`));
               setValues(defaultValues);
               setDirty(false);
               applyAll(defaultValues);
               setDebugInfo([]);
-              toast.success("All filters reset");
+              setFilterHistory([]);
+              toast.success("All filters reset and debug cleared");
             }}
           >
             Reset All
