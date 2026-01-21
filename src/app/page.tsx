@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -290,6 +290,19 @@ export default function Page() {
     },
     [getWorker, values],
   );
+
+  // Transfer image from hidden canvas to visible canvas when ready
+  useEffect(() => {
+    if (ready && baseImage.current && canvasRef.current) {
+      console.log("[DEBUG] Transferring image to visible canvas");
+      const ctx = canvasRef.current.getContext("2d");
+      if (ctx) {
+        canvasRef.current.width = baseImage.current.width;
+        canvasRef.current.height = baseImage.current.height;
+        ctx.putImageData(baseImage.current, 0, 0);
+      }
+    }
+  }, [ready]);
 
   return (
     <div className="h-screen grid grid-cols-[1fr_360px] bg-background text-foreground">
