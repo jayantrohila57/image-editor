@@ -2,7 +2,7 @@
 // Enhanced worker with comprehensive error handling and debugging
 
 let wasmModule = null;
-let isInitialized = false;
+let _isInitialized = false;
 
 // Load WebAssembly module
 async function loadWasm() {
@@ -14,12 +14,12 @@ async function loadWasm() {
     const { default: wasmFunctions } = await import(wasmUrl);
 
     wasmModule = wasmFunctions;
-    isInitialized = true;
+    _isInitialized = true;
     console.log("[WORKER] WebAssembly module loaded successfully");
     return true;
   } catch (error) {
     console.error("[WORKER] Failed to load WebAssembly module:", error);
-    isInitialized = false;
+    _isInitialized = false;
     return false;
   }
 }
@@ -32,7 +32,7 @@ function processImage(data, type, value, job) {
     }
 
     console.log(
-      `[WORKER] Processing ${type} filter with value ${value} for job ${job}`
+      `[WORKER] Processing ${type} filter with value ${value} for job ${job}`,
     );
 
     const buffer = new Uint8Array(data);
@@ -63,14 +63,14 @@ function processImage(data, type, value, job) {
 }
 
 // Handle messages from main thread
-self.onmessage = async function (e) {
+self.onmessage = async (e) => {
   console.log("[WORKER] Received message:", e.data);
 
   const { type, buffer, value, job, prevAmount, currentAmount } = e.data;
 
   try {
     switch (type) {
-      case "init":
+      case "init": {
         console.log("[WORKER] Initializing...");
         const success = await loadWasm();
         self.postMessage({
@@ -80,8 +80,9 @@ self.onmessage = async function (e) {
           error: success ? null : "Failed to initialize WebAssembly",
         });
         break;
+      }
 
-      default:
+      default: {
         if (!buffer) {
           throw new Error("No image data provided");
         }
@@ -93,6 +94,7 @@ self.onmessage = async function (e) {
           currentAmount,
         });
         break;
+      }
     }
   } catch (error) {
     console.error("[WORKER] Error in message handler:", error);
@@ -109,7 +111,7 @@ self.onmessage = async function (e) {
 };
 
 // Handle worker errors
-self.onerror = function (error) {
+self.onerror = (error) => {
   console.error("[WORKER] Worker error:", error);
   self.postMessage({
     success: false,

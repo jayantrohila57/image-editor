@@ -1,2 +1,275 @@
-async function Module(moduleArg={}){var moduleRtn;var Module=moduleArg;var ENVIRONMENT_IS_WEB=false;var ENVIRONMENT_IS_WORKER=true;var arguments_=[];var thisProgram="./this.program";var _scriptName=import.meta.url;var scriptDirectory="";function locateFile(path){if(Module["locateFile"]){return Module["locateFile"](path,scriptDirectory)}return scriptDirectory+path}var readAsync,readBinary;if(ENVIRONMENT_IS_WEB||ENVIRONMENT_IS_WORKER){try{scriptDirectory=new URL(".",_scriptName).href}catch{}{if(ENVIRONMENT_IS_WORKER){readBinary=url=>{var xhr=new XMLHttpRequest;xhr.open("GET",url,false);xhr.responseType="arraybuffer";xhr.send(null);return new Uint8Array(xhr.response)}}readAsync=async url=>{var response=await fetch(url,{credentials:"same-origin"});if(response.ok){return response.arrayBuffer()}throw new Error(response.status+" : "+response.url)}}}else{}var out=console.log.bind(console);var err=console.error.bind(console);var wasmBinary;var ABORT=false;var readyPromiseResolve,readyPromiseReject;var HEAP8,HEAPU8,HEAP16,HEAPU16,HEAP32,HEAPU32,HEAPF32,HEAPF64;var HEAP64,HEAPU64;var runtimeInitialized=false;function updateMemoryViews(){var b=wasmMemory.buffer;HEAP8=new Int8Array(b);HEAP16=new Int16Array(b);Module["HEAPU8"]=HEAPU8=new Uint8Array(b);HEAPU16=new Uint16Array(b);HEAP32=new Int32Array(b);HEAPU32=new Uint32Array(b);HEAPF32=new Float32Array(b);HEAPF64=new Float64Array(b);HEAP64=new BigInt64Array(b);HEAPU64=new BigUint64Array(b)}function preRun(){if(Module["preRun"]){if(typeof Module["preRun"]=="function")Module["preRun"]=[Module["preRun"]];while(Module["preRun"].length){addOnPreRun(Module["preRun"].shift())}}callRuntimeCallbacks(onPreRuns)}function initRuntime(){runtimeInitialized=true;wasmExports["c"]()}function postRun(){if(Module["postRun"]){if(typeof Module["postRun"]=="function")Module["postRun"]=[Module["postRun"]];while(Module["postRun"].length){addOnPostRun(Module["postRun"].shift())}}callRuntimeCallbacks(onPostRuns)}function abort(what){Module["onAbort"]?.(what);what="Aborted("+what+")";err(what);ABORT=true;what+=". Build with -sASSERTIONS for more info.";var e=new WebAssembly.RuntimeError(what);readyPromiseReject?.(e);throw e}var wasmBinaryFile;function findWasmBinary(){if(Module["locateFile"]){return locateFile("image.wasm")}return new URL("image.wasm",import.meta.url).href}function getBinarySync(file){if(file==wasmBinaryFile&&wasmBinary){return new Uint8Array(wasmBinary)}if(readBinary){return readBinary(file)}throw"both async and sync fetching of the wasm failed"}async function getWasmBinary(binaryFile){if(!wasmBinary){try{var response=await readAsync(binaryFile);return new Uint8Array(response)}catch{}}return getBinarySync(binaryFile)}async function instantiateArrayBuffer(binaryFile,imports){try{var binary=await getWasmBinary(binaryFile);var instance=await WebAssembly.instantiate(binary,imports);return instance}catch(reason){err(`failed to asynchronously prepare wasm: ${reason}`);abort(reason)}}async function instantiateAsync(binary,binaryFile,imports){if(!binary){try{var response=fetch(binaryFile,{credentials:"same-origin"});var instantiationResult=await WebAssembly.instantiateStreaming(response,imports);return instantiationResult}catch(reason){err(`wasm streaming compile failed: ${reason}`);err("falling back to ArrayBuffer instantiation")}}return instantiateArrayBuffer(binaryFile,imports)}function getWasmImports(){var imports={a:wasmImports};return imports}async function createWasm(){function receiveInstance(instance,module){wasmExports=instance.exports;assignWasmExports(wasmExports);updateMemoryViews();return wasmExports}function receiveInstantiationResult(result){return receiveInstance(result["instance"])}var info=getWasmImports();if(Module["instantiateWasm"]){return new Promise((resolve,reject)=>{Module["instantiateWasm"](info,(inst,mod)=>{resolve(receiveInstance(inst,mod))})})}wasmBinaryFile??=findWasmBinary();var result=await instantiateAsync(wasmBinary,wasmBinaryFile,info);var exports=receiveInstantiationResult(result);return exports}class ExitStatus{name="ExitStatus";constructor(status){this.message=`Program terminated with exit(${status})`;this.status=status}}var callRuntimeCallbacks=callbacks=>{while(callbacks.length>0){callbacks.shift()(Module)}};var onPostRuns=[];var addOnPostRun=cb=>onPostRuns.push(cb);var onPreRuns=[];var addOnPreRun=cb=>onPreRuns.push(cb);var noExitRuntime=true;var abortOnCannotGrowMemory=requestedSize=>{abort("OOM")};var _emscripten_resize_heap=requestedSize=>{var oldSize=HEAPU8.length;requestedSize>>>=0;abortOnCannotGrowMemory(requestedSize)};{if(Module["noExitRuntime"])noExitRuntime=Module["noExitRuntime"];if(Module["print"])out=Module["print"];if(Module["printErr"])err=Module["printErr"];if(Module["wasmBinary"])wasmBinary=Module["wasmBinary"];if(Module["arguments"])arguments_=Module["arguments"];if(Module["thisProgram"])thisProgram=Module["thisProgram"];if(Module["preInit"]){if(typeof Module["preInit"]=="function")Module["preInit"]=[Module["preInit"]];while(Module["preInit"].length>0){Module["preInit"].shift()()}}}var _invert,_grayscale,_brightness,_contrast,_gamma,_sepia,_saturation,_tint,_temperature,_fade,_solarize,_malloc,_free,memory,__indirect_function_table,wasmMemory;function assignWasmExports(wasmExports){_invert=Module["_invert"]=wasmExports["d"];_grayscale=Module["_grayscale"]=wasmExports["e"];_brightness=Module["_brightness"]=wasmExports["f"];_contrast=Module["_contrast"]=wasmExports["g"];_gamma=Module["_gamma"]=wasmExports["h"];_sepia=Module["_sepia"]=wasmExports["i"];_saturation=Module["_saturation"]=wasmExports["j"];_tint=Module["_tint"]=wasmExports["k"];_temperature=Module["_temperature"]=wasmExports["l"];_fade=Module["_fade"]=wasmExports["m"];_solarize=Module["_solarize"]=wasmExports["n"];_malloc=Module["_malloc"]=wasmExports["o"];_free=Module["_free"]=wasmExports["p"];memory=wasmMemory=wasmExports["b"];__indirect_function_table=wasmExports["__indirect_function_table"]}var wasmImports={a:_emscripten_resize_heap};function run(){preRun();function doRun(){Module["calledRun"]=true;if(ABORT)return;initRuntime();readyPromiseResolve?.(Module);Module["onRuntimeInitialized"]?.();postRun()}if(Module["setStatus"]){Module["setStatus"]("Running...");setTimeout(()=>{setTimeout(()=>Module["setStatus"](""),1);doRun()},1)}else{doRun()}}var wasmExports;wasmExports=await (createWasm());run();if(runtimeInitialized){moduleRtn=Module}else{moduleRtn=new Promise((resolve,reject)=>{readyPromiseResolve=resolve;readyPromiseReject=reject})}
-;return moduleRtn}export default Module;
+async function Module(moduleArg = {}) {
+  var moduleRtn;
+  var Module = moduleArg;
+  var ENVIRONMENT_IS_WEB = false;
+  var ENVIRONMENT_IS_WORKER = true;
+  var _arguments_ = [];
+  var _thisProgram = "./this.program";
+  var _scriptName = import.meta.url;
+  var scriptDirectory = "";
+  function locateFile(path) {
+    if (Module.locateFile) {
+      return Module.locateFile(path, scriptDirectory);
+    }
+    return scriptDirectory + path;
+  }
+  var readAsync, readBinary;
+  if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
+    try {
+      scriptDirectory = new URL(".", _scriptName).href;
+    } catch {}
+    if (ENVIRONMENT_IS_WORKER) {
+      readBinary = (url) => {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, false);
+        xhr.responseType = "arraybuffer";
+        xhr.send(null);
+        return new Uint8Array(xhr.response);
+      };
+    }
+    readAsync = async (url) => {
+      var response = await fetch(url, { credentials: "same-origin" });
+      if (response.ok) {
+        return response.arrayBuffer();
+      }
+      throw new Error(`${response.status} : ${response.url}`);
+    };
+  } else {
+  }
+  var _out = console.log.bind(console);
+  var err = console.error.bind(console);
+  var wasmBinary;
+  var ABORT = false;
+  var readyPromiseResolve, readyPromiseReject;
+  var _HEAP8, HEAPU8, _HEAP16, _HEAPU16, _HEAP32, _HEAPU32, _HEAPF32, _HEAPF64;
+  var _HEAP64, _HEAPU64;
+  var runtimeInitialized = false;
+  function updateMemoryViews() {
+    var b = wasmMemory.buffer;
+    _HEAP8 = new Int8Array(b);
+    _HEAP16 = new Int16Array(b);
+    Module.HEAPU8 = HEAPU8 = new Uint8Array(b);
+    _HEAPU16 = new Uint16Array(b);
+    _HEAP32 = new Int32Array(b);
+    _HEAPU32 = new Uint32Array(b);
+    _HEAPF32 = new Float32Array(b);
+    _HEAPF64 = new Float64Array(b);
+    _HEAP64 = new BigInt64Array(b);
+    _HEAPU64 = new BigUint64Array(b);
+  }
+  function preRun() {
+    if (Module.preRun) {
+      if (typeof Module.preRun === "function") Module.preRun = [Module.preRun];
+      while (Module.preRun.length) {
+        addOnPreRun(Module.preRun.shift());
+      }
+    }
+    callRuntimeCallbacks(onPreRuns);
+  }
+  function initRuntime() {
+    runtimeInitialized = true;
+    wasmExports.c();
+  }
+  function postRun() {
+    if (Module.postRun) {
+      if (typeof Module.postRun === "function")
+        Module.postRun = [Module.postRun];
+      while (Module.postRun.length) {
+        addOnPostRun(Module.postRun.shift());
+      }
+    }
+    callRuntimeCallbacks(onPostRuns);
+  }
+  function abort(what) {
+    Module.onAbort?.(what);
+    what = `Aborted(${what})`;
+    err(what);
+    ABORT = true;
+    what += ". Build with -sASSERTIONS for more info.";
+    var e = new WebAssembly.RuntimeError(what);
+    readyPromiseReject?.(e);
+    throw e;
+  }
+  var wasmBinaryFile;
+  function findWasmBinary() {
+    if (Module.locateFile) {
+      return locateFile("image.wasm");
+    }
+    return new URL("image.wasm", import.meta.url).href;
+  }
+  function getBinarySync(file) {
+    if (file === wasmBinaryFile && wasmBinary) {
+      return new Uint8Array(wasmBinary);
+    }
+    if (readBinary) {
+      return readBinary(file);
+    }
+    throw "both async and sync fetching of the wasm failed";
+  }
+  async function getWasmBinary(binaryFile) {
+    if (!wasmBinary) {
+      try {
+        var response = await readAsync(binaryFile);
+        return new Uint8Array(response);
+      } catch {}
+    }
+    return getBinarySync(binaryFile);
+  }
+  async function instantiateArrayBuffer(binaryFile, imports) {
+    try {
+      var binary = await getWasmBinary(binaryFile);
+      var instance = await WebAssembly.instantiate(binary, imports);
+      return instance;
+    } catch (reason) {
+      err(`failed to asynchronously prepare wasm: ${reason}`);
+      abort(reason);
+    }
+  }
+  async function instantiateAsync(binary, binaryFile, imports) {
+    if (!binary) {
+      try {
+        var response = fetch(binaryFile, { credentials: "same-origin" });
+        var instantiationResult = await WebAssembly.instantiateStreaming(
+          response,
+          imports,
+        );
+        return instantiationResult;
+      } catch (reason) {
+        err(`wasm streaming compile failed: ${reason}`);
+        err("falling back to ArrayBuffer instantiation");
+      }
+    }
+    return instantiateArrayBuffer(binaryFile, imports);
+  }
+  function getWasmImports() {
+    var imports = { a: wasmImports };
+    return imports;
+  }
+  async function createWasm() {
+    function receiveInstance(instance, _module) {
+      wasmExports = instance.exports;
+      assignWasmExports(wasmExports);
+      updateMemoryViews();
+      return wasmExports;
+    }
+    function receiveInstantiationResult(result) {
+      return receiveInstance(result.instance);
+    }
+    var info = getWasmImports();
+    if (Module.instantiateWasm) {
+      return new Promise((resolve, _reject) => {
+        Module.instantiateWasm(info, (inst, mod) => {
+          resolve(receiveInstance(inst, mod));
+        });
+      });
+    }
+    wasmBinaryFile ??= findWasmBinary();
+    var result = await instantiateAsync(wasmBinary, wasmBinaryFile, info);
+    var exports = receiveInstantiationResult(result);
+    return exports;
+  }
+  class ExitStatus {
+    name = "ExitStatus";
+    constructor(status) {
+      this.message = `Program terminated with exit(${status})`;
+      this.status = status;
+    }
+  }
+  var callRuntimeCallbacks = (callbacks) => {
+    while (callbacks.length > 0) {
+      callbacks.shift()(Module);
+    }
+  };
+  var onPostRuns = [];
+  var addOnPostRun = (cb) => onPostRuns.push(cb);
+  var onPreRuns = [];
+  var addOnPreRun = (cb) => onPreRuns.push(cb);
+  var _noExitRuntime = true;
+  var abortOnCannotGrowMemory = (_requestedSize) => {
+    abort("OOM");
+  };
+  var _emscripten_resize_heap = (requestedSize) => {
+    var _oldSize = HEAPU8.length;
+    requestedSize >>>= 0;
+    abortOnCannotGrowMemory(requestedSize);
+  };
+  if (Module.noExitRuntime) _noExitRuntime = Module.noExitRuntime;
+  if (Module.print) _out = Module.print;
+  if (Module.printErr) err = Module.printErr;
+  if (Module.wasmBinary) wasmBinary = Module.wasmBinary;
+  if (Module.arguments) _arguments_ = Module.arguments;
+  if (Module.thisProgram) _thisProgram = Module.thisProgram;
+  if (Module.preInit) {
+    if (typeof Module.preInit === "function") Module.preInit = [Module.preInit];
+    while (Module.preInit.length > 0) {
+      Module.preInit.shift()();
+    }
+  }
+  var _invert,
+    _grayscale,
+    _brightness,
+    _contrast,
+    _gamma,
+    _sepia,
+    _saturation,
+    _tint,
+    _temperature,
+    _fade,
+    _solarize,
+    _malloc,
+    _free,
+    _memory,
+    __indirect_function_table,
+    wasmMemory;
+  function assignWasmExports(wasmExports) {
+    _invert = Module._invert = wasmExports.d;
+    _grayscale = Module._grayscale = wasmExports.e;
+    _brightness = Module._brightness = wasmExports.f;
+    _contrast = Module._contrast = wasmExports.g;
+    _gamma = Module._gamma = wasmExports.h;
+    _sepia = Module._sepia = wasmExports.i;
+    _saturation = Module._saturation = wasmExports.j;
+    _tint = Module._tint = wasmExports.k;
+    _temperature = Module._temperature = wasmExports.l;
+    _fade = Module._fade = wasmExports.m;
+    _solarize = Module._solarize = wasmExports.n;
+    _malloc = Module._malloc = wasmExports.o;
+    _free = Module._free = wasmExports.p;
+    _memory = wasmMemory = wasmExports.b;
+    __indirect_function_table = wasmExports.__indirect_function_table;
+  }
+  var wasmImports = { a: _emscripten_resize_heap };
+  function run() {
+    preRun();
+    function doRun() {
+      Module.calledRun = true;
+      if (ABORT) return;
+      initRuntime();
+      readyPromiseResolve?.(Module);
+      Module.onRuntimeInitialized?.();
+      postRun();
+    }
+    if (Module.setStatus) {
+      Module.setStatus("Running...");
+      setTimeout(() => {
+        setTimeout(() => Module.setStatus(""), 1);
+        doRun();
+      }, 1);
+    } else {
+      doRun();
+    }
+  }
+  var wasmExports;
+  wasmExports = await createWasm();
+  run();
+  if (runtimeInitialized) {
+    moduleRtn = Module;
+  } else {
+    moduleRtn = new Promise((resolve, reject) => {
+      readyPromiseResolve = resolve;
+      readyPromiseReject = reject;
+    });
+  }
+  return moduleRtn;
+}
+export default Module;

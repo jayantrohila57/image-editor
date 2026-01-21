@@ -3,7 +3,7 @@ import Module from "./image.js";
 let mod = null;
 let queue = [];
 
-Module().then(m => {
+Module().then((m) => {
   mod = m;
   queue.forEach(run);
   queue = [];
@@ -31,7 +31,7 @@ function run({ buffer, type, value, job }) {
   self.postMessage({ buffer: out.buffer, job }, [out.buffer]);
 }
 
-self.onmessage = e => {
+self.onmessage = (e) => {
   if (!mod) {
     queue.push(e.data);
     return;
