@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, RefreshCcw } from "lucide-react";
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import { Component, type ErrorInfo, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,

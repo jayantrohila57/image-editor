@@ -1,30 +1,24 @@
 "use client";
 
-import React from "react";
-import { useImageEditor, FILTERS } from "@/lib/image-context";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Download,
-  Upload,
-  RotateCcw,
-  Trash2,
-  Settings2,
-  Image as ImageIcon,
   AlertCircle,
+  Download,
+  Image as ImageIcon,
   Loader2,
+  RotateCcw,
+  Settings2,
+  Trash2,
+  Upload,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import type React from "react";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
+import { FILTERS, useImageEditor } from "@/lib/image-context";
+import { cn } from "@/lib/utils";
 
 /**
  * Editor Main Wrapper
@@ -61,7 +55,7 @@ Editor.Canvas = function EditorCanvas() {
     <ErrorBoundary name="Editor Canvas">
       <div className="flex flex-col items-center justify-center bg-muted/30 p-8 h-full relative">
         {/* Hidden canvas for image processing when not ready */}
-        <canvas ref={hiddenCanvasRef} className="hidden" aria-hidden="true" />
+        <canvas ref={hiddenCanvasRef} className="hidden" />
 
         {!workerReady && (
           <div className="absolute top-4 left-4 z-20">
@@ -255,7 +249,10 @@ Editor.Filters = function EditorFilters() {
             {FILTERS.map((f) => (
               <div key={f.key} className="space-y-3 group px-1">
                 <div className="flex justify-between items-center group-hover:scale-[1.01] transition-transform">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <label
+                    htmlFor={`slider-${f.key}`}
+                    className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+                  >
                     {f.label}
                   </label>
                   <div className="flex items-center gap-2">
@@ -284,6 +281,7 @@ Editor.Filters = function EditorFilters() {
                   </div>
                 </div>
                 <Slider
+                  id={`slider-${f.key}`}
                   min={f.min}
                   max={f.max}
                   step={f.step}
@@ -312,15 +310,8 @@ Editor.Filters = function EditorFilters() {
  * Editor Top/Bottom Actions
  */
 Editor.Actions = function EditorActions() {
-  const {
-    ready,
-    dirty,
-    loading,
-    workerReady,
-    resetAll,
-    downloadImage,
-    loadImage,
-  } = useImageEditor();
+  const { ready, loading, workerReady, resetAll, downloadImage, loadImage } =
+    useImageEditor();
 
   return (
     <div className="p-4 border-t bg-muted/20 space-y-3">

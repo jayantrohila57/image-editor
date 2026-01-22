@@ -1,10 +1,9 @@
 "use client";
 
-import { ImageEditorProvider } from "@/lib/image-context";
 import { Editor } from "@/components/editor-components";
-import { Toaster } from "@/components/ui/sonner";
-
 import { ErrorBoundary } from "@/components/error-boundary";
+import { Toaster } from "@/components/ui/sonner";
+import { ImageEditorProvider } from "@/lib/image-context";
 
 export default function Page() {
   return (
