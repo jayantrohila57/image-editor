@@ -5,18 +5,22 @@ interface LogEntry {
   timestamp: string;
   level: string;
   message: string;
-  data?: any;
+  data?: string | number | boolean | object;
 }
 
 interface LoggerInstance {
   logs: LogEntry[];
   maxLogs: number;
   logLevel: "debug" | "info" | "warn" | "error";
-  log: (level: string, message: string, data?: any) => void;
-  debug: (message: string, data?: any) => void;
-  info: (message: string, data?: any) => void;
-  warn: (message: string, data?: any) => void;
-  error: (message: string, data?: any) => void;
+  log: (
+    level: string,
+    message: string,
+    data?: string | number | boolean | object,
+  ) => void;
+  debug: (message: string, data?: string | number | boolean | object) => void;
+  info: (message: string, data?: string | number | boolean | object) => void;
+  warn: (message: string, data?: string | number | boolean | object) => void;
+  error: (message: string, data?: string | number | boolean | object) => void;
   getLogs: (level?: string) => LogEntry[];
   clearLogs: () => void;
   exportLogs: () => string;
@@ -28,7 +32,11 @@ function createLogger(): LoggerInstance {
   let maxLogs = 1000;
   let logLevel: "debug" | "info" | "warn" | "error" = "debug";
 
-  const log = (level: string, message: string, data?: any) => {
+  const log = (
+    level: string,
+    message: string,
+    data?: string | number | boolean | object,
+  ) => {
     const timestamp = new Date().toISOString();
     const logEntry: LogEntry = {
       timestamp,
@@ -79,10 +87,14 @@ function createLogger(): LoggerInstance {
       logLevel = value;
     },
     log,
-    debug: (message: string, data?: any) => log("debug", message, data),
-    info: (message: string, data?: any) => log("info", message, data),
-    warn: (message: string, data?: any) => log("warn", message, data),
-    error: (message: string, data?: any) => log("error", message, data),
+    debug: (message: string, data?: string | number | boolean | object) =>
+      log("debug", message, data),
+    info: (message: string, data?: string | number | boolean | object) =>
+      log("info", message, data),
+    warn: (message: string, data?: string | number | boolean | object) =>
+      log("warn", message, data),
+    error: (message: string, data?: string | number | boolean | object) =>
+      log("error", message, data),
     getLogs: (level?: string) => {
       if (level) {
         return logs.filter((log) => log.level === level.toUpperCase());

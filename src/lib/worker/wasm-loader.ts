@@ -139,40 +139,40 @@ function createWasmLoader(): WasmLoaderInstance {
   };
 
   const createModuleInterface = (): WasmModule => ({
-    _malloc: (size: number) => 1024, // Dummy pointer
-    _free: (ptr: number) => {
+    _malloc: (_size: number) => 1024, // Dummy pointer
+    _free: (_ptr: number) => {
       // Simple free implementation
     },
     HEAPU8: new Uint8Array(1024 * 1024), // 1MB heap
     // Filter functions
-    _invert: (ptr: number, size: number, value: number) => {
+    _invert: (_ptr: number, _size: number, _value: number) => {
       console.log("[WORKER] Processing invert filter");
     },
-    _grayscale: (ptr: number, size: number, value: number) => {
+    _grayscale: (_ptr: number, _size: number, _value: number) => {
       console.log("[WORKER] Processing grayscale filter");
     },
-    _brightness: (ptr: number, size: number, value: number) => {
+    _brightness: (_ptr: number, _size: number, _value: number) => {
       console.log("[WORKER] Processing brightness filter");
     },
-    _contrast: (ptr: number, size: number, value: number) => {
+    _contrast: (_ptr: number, _size: number, _value: number) => {
       console.log("[WORKER] Processing contrast filter");
     },
-    _gamma: (ptr: number, size: number, value: number) => {
+    _gamma: (_ptr: number, _size: number, _value: number) => {
       console.log("[WORKER] Processing gamma filter");
     },
-    _sepia: (ptr: number, size: number, value: number) => {
+    _sepia: (_ptr: number, _size: number, _value: number) => {
       console.log("[WORKER] Processing sepia filter");
     },
-    _saturation: (ptr: number, size: number, value: number) => {
+    _saturation: (_ptr: number, _size: number, _value: number) => {
       console.log("[WORKER] Processing saturation filter");
     },
-    _temperature: (ptr: number, size: number, value: number) => {
+    _temperature: (_ptr: number, _size: number, _value: number) => {
       console.log("[WORKER] Processing temperature filter");
     },
-    _fade: (ptr: number, size: number, value: number) => {
+    _fade: (_ptr: number, _size: number, _value: number) => {
       console.log("[WORKER] Processing fade filter");
     },
-    _solarize: (ptr: number, size: number, value: number) => {
+    _solarize: (_ptr: number, _size: number, _value: number) => {
       console.log("[WORKER] Processing solarize filter");
     },
   });
@@ -199,6 +199,9 @@ function createWasmLoader(): WasmLoaderInstance {
     },
     set wasmBase(value: string) {
       wasmBase = value;
+    },
+    get logger() {
+      return logger;
     },
     setLogger,
     loadWasm,

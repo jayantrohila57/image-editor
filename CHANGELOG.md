@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Buffer Transfer**: Fixed buffer handling between worker and UI using subarray instead of slice
 - **Contrast Filter**: Corrected contrast algorithm formula for proper visual effect
 - **Error Handling**: Added comprehensive error handling and buffer size validation in image context
+- **Linting**: Fixed all TypeScript linting issues (unused variables, unused parameters, any types, non-null assertions)
+- **Type Safety**: Improved type definitions and replaced any types with proper union types
 
 ## [0.1.0] - 2025-01-22
 

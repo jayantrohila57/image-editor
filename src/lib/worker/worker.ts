@@ -35,7 +35,7 @@ interface WasmModule {
 }
 
 let wasmModule: WasmModule | null = null;
-let isInitialized = false;
+let _isInitialized = false;
 
 // Simple WASM loading with basic error handling
 async function initWasm(): Promise<boolean> {
@@ -84,37 +84,37 @@ async function initWasm(): Promise<boolean> {
 
     // Create simple module interface
     wasmModule = {
-      _malloc: (size: number) => 1024,
-      _free: (ptr: number) => {},
+      _malloc: (_size: number) => 1024,
+      _free: (_ptr: number) => {},
       HEAPU8: new Uint8Array(1024 * 1024),
-      _invert: (ptr: number, size: number, value: number) =>
+      _invert: (_ptr: number, _size: number, _value: number) =>
         console.log("[WORKER] Processing invert filter"),
-      _grayscale: (ptr: number, size: number, value: number) =>
+      _grayscale: (_ptr: number, _size: number, _value: number) =>
         console.log("[WORKER] Processing grayscale filter"),
-      _brightness: (ptr: number, size: number, value: number) =>
+      _brightness: (_ptr: number, _size: number, _value: number) =>
         console.log("[WORKER] Processing brightness filter"),
-      _contrast: (ptr: number, size: number, value: number) =>
+      _contrast: (_ptr: number, _size: number, _value: number) =>
         console.log("[WORKER] Processing contrast filter"),
-      _gamma: (ptr: number, size: number, value: number) =>
+      _gamma: (_ptr: number, _size: number, _value: number) =>
         console.log("[WORKER] Processing gamma filter"),
-      _sepia: (ptr: number, size: number, value: number) =>
+      _sepia: (_ptr: number, _size: number, _value: number) =>
         console.log("[WORKER] Processing sepia filter"),
-      _saturation: (ptr: number, size: number, value: number) =>
+      _saturation: (_ptr: number, _size: number, _value: number) =>
         console.log("[WORKER] Processing saturation filter"),
-      _temperature: (ptr: number, size: number, value: number) =>
+      _temperature: (_ptr: number, _size: number, _value: number) =>
         console.log("[WORKER] Processing temperature filter"),
-      _fade: (ptr: number, size: number, value: number) =>
+      _fade: (_ptr: number, _size: number, _value: number) =>
         console.log("[WORKER] Processing fade filter"),
-      _solarize: (ptr: number, size: number, value: number) =>
+      _solarize: (_ptr: number, _size: number, _value: number) =>
         console.log("[WORKER] Processing solarize filter"),
     };
 
-    isInitialized = true;
+    _isInitialized = true;
     console.log("[WORKER] WebAssembly module initialized successfully");
     return true;
   } catch (error) {
     console.error("[WORKER] Failed to initialize WebAssembly module:", error);
-    isInitialized = false;
+    _isInitialized = false;
     return false;
   }
 }
@@ -195,7 +195,11 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
           throw new Error("No image data provided");
         }
 
-        const result = processImage(buffer, type, value, job!);
+        if (job === undefined) {
+          throw new Error("Job ID is required");
+        }
+
+        const result = processImage(buffer, type, value ?? 0, job);
         self.postMessage({
           ...result,
           prevAmount,
@@ -219,14 +223,16 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
 };
 
 // Error handler
-self.onerror = (error: ErrorEvent) => {
-  console.error("[WORKER] Worker error:", error);
+self.onerror = (event: string | Event) => {
+  const errorMessage =
+    typeof event === "string" ? event : (event as ErrorEvent).message;
+  console.error("[WORKER] Worker error:", errorMessage);
   self.postMessage({
     success: false,
     job: null,
     type: "worker_error",
     buffer: null,
-    error: error.message || "Worker encountered an error",
+    error: errorMessage || "Worker encountered an error",
   });
 };
 
