@@ -1,10 +1,12 @@
 // WebAssembly Image Processing Worker
 // Minimal worker with essential functionality only
+// Falls back to JavaScript implementation if WASM unavailable
 
 let wasmModule = null;
 let isInitialized = false;
+let useWasmFallback = false; // Flag to indicate if using JS fallback
 
-// Simple WASM loading with basic error handling
+// Simple WASM loading with basic error handling and fallback
 async function initWasm() {
   try {
     console.log("[WORKER] Initializing WebAssembly...");
@@ -13,9 +15,12 @@ async function initWasm() {
     const wasmResponse = await fetch(wasmUrl);
 
     if (!wasmResponse.ok) {
-      throw new Error(
-        `WASM fetch failed: ${wasmResponse.status} ${wasmResponse.statusText}`
+      console.warn(
+        `[WORKER] WASM file not found (${wasmResponse.status}). Falling back to JavaScript implementation.`
       );
+      useWasmFallback = true;
+      wasmModule = createJavaScriptFallback();
+      return true;
     }
 
     const contentType = wasmResponse.headers.get("content-type");
@@ -239,11 +244,14 @@ self.onmessage = async (e) => {
       case "init": {
         console.log("[WORKER] Initializing...");
         const success = await initWasm();
+        const modeInfo = useWasmFallback ? "JavaScript fallback" : "WebAssembly";
+        console.log(`[WORKER] Initialization complete. Mode: ${modeInfo}`);
         self.postMessage({
           type: "init",
           success,
           job,
           error: success ? null : "Failed to initialize WebAssembly",
+          mode: modeInfo,
         });
         break;
       }
@@ -287,5 +295,137 @@ self.onerror = (error) => {
     error: error.message || "Worker encountered an error",
   });
 };
+
+// JavaScript fallback implementation for image processing
+function createJavaScriptFallback() {
+  const memoryBuffer = new Uint8Array(16 * 1024 * 1024); // 16MB workspace
+
+  const applyFilter = (data, type, value) => {
+    const len = data.length;
+    
+    switch (type) {
+      case "invert": {
+        const amount = Math.min(value, 1);
+        for (let i = 0; i < len; i += 4) {
+          data[i] = Math.round(data[i] * (1 - amount) + (255 - data[i]) * amount);
+          data[i + 1] = Math.round(data[i + 1] * (1 - amount) + (255 - data[i + 1]) * amount);
+          data[i + 2] = Math.round(data[i + 2] * (1 - amount) + (255 - data[i + 2]) * amount);
+        }
+        break;
+      }
+      case "grayscale": {
+        const amount = Math.min(value, 1);
+        for (let i = 0; i < len; i += 4) {
+          const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+          data[i] = Math.round(data[i] * (1 - amount) + gray * amount);
+          data[i + 1] = Math.round(data[i + 1] * (1 - amount) + gray * amount);
+          data[i + 2] = Math.round(data[i + 2] * (1 - amount) + gray * amount);
+        }
+        break;
+      }
+      case "brightness": {
+        const delta = value;
+        for (let i = 0; i < len; i += 4) {
+          data[i] = Math.max(0, Math.min(255, data[i] + delta));
+          data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + delta));
+          data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + delta));
+        }
+        break;
+      }
+      case "contrast": {
+        const factor = value;
+        const intercept = 128 * (1 - factor);
+        for (let i = 0; i < len; i += 4) {
+          data[i] = Math.max(0, Math.min(255, data[i] * factor + intercept));
+          data[i + 1] = Math.max(0, Math.min(255, data[i + 1] * factor + intercept));
+          data[i + 2] = Math.max(0, Math.min(255, data[i + 2] * factor + intercept));
+        }
+        break;
+      }
+      case "gamma": {
+        const gamma = 1 / value;
+        for (let i = 0; i < len; i += 4) {
+          data[i] = Math.round(255 * Math.pow(data[i] / 255, gamma));
+          data[i + 1] = Math.round(255 * Math.pow(data[i + 1] / 255, gamma));
+          data[i + 2] = Math.round(255 * Math.pow(data[i + 2] / 255, gamma));
+        }
+        break;
+      }
+      case "sepia": {
+        const amount = Math.min(value, 1);
+        for (let i = 0; i < len; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const sr = Math.round(0.393 * r + 0.769 * g + 0.189 * b);
+          const sg = Math.round(0.349 * r + 0.686 * g + 0.168 * b);
+          const sb = Math.round(0.272 * r + 0.534 * g + 0.131 * b);
+          data[i] = Math.round(r * (1 - amount) + sr * amount);
+          data[i + 1] = Math.round(g * (1 - amount) + sg * amount);
+          data[i + 2] = Math.round(b * (1 - amount) + sb * amount);
+        }
+        break;
+      }
+      case "saturation": {
+        const factor = value;
+        for (let i = 0; i < len; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+          data[i] = Math.round(gray + (r - gray) * factor);
+          data[i + 1] = Math.round(gray + (g - gray) * factor);
+          data[i + 2] = Math.round(gray + (b - gray) * factor);
+        }
+        break;
+      }
+      case "temperature": {
+        const delta = value * 50; // Scale for perceptible effect
+        for (let i = 0; i < len; i += 4) {
+          if (delta > 0) {
+            data[i] = Math.max(0, Math.min(255, data[i] + delta));
+          } else {
+            data[i + 2] = Math.max(0, Math.min(255, data[i + 2] - delta));
+          }
+        }
+        break;
+      }
+      case "fade": {
+        const amount = Math.min(value, 1);
+        for (let i = 0; i < len; i += 4) {
+          data[i] = Math.round(data[i] * (1 - amount) + 255 * amount * 0.5);
+          data[i + 1] = Math.round(data[i + 1] * (1 - amount) + 255 * amount * 0.5);
+          data[i + 2] = Math.round(data[i + 2] * (1 - amount) + 255 * amount * 0.5);
+        }
+        break;
+      }
+      case "solarize": {
+        const threshold = Math.round(value * 255);
+        for (let i = 0; i < len; i += 4) {
+          data[i] = data[i] < threshold ? 255 - data[i] : data[i];
+          data[i + 1] = data[i + 1] < threshold ? 255 - data[i + 1] : data[i + 1];
+          data[i + 2] = data[i + 2] < threshold ? 255 - data[i + 2] : data[i + 2];
+        }
+        break;
+      }
+    }
+  };
+
+  return {
+    _malloc: (size) => 0,
+    _free: () => {},
+    HEAPU8: memoryBuffer,
+    _invert: (ptr, size, value) => applyFilter(memoryBuffer.subarray(ptr, ptr + size), "invert", value),
+    _grayscale: (ptr, size, value) => applyFilter(memoryBuffer.subarray(ptr, ptr + size), "grayscale", value),
+    _brightness: (ptr, size, value) => applyFilter(memoryBuffer.subarray(ptr, ptr + size), "brightness", value),
+    _contrast: (ptr, size, value) => applyFilter(memoryBuffer.subarray(ptr, ptr + size), "contrast", value),
+    _gamma: (ptr, size, value) => applyFilter(memoryBuffer.subarray(ptr, ptr + size), "gamma", value),
+    _sepia: (ptr, size, value) => applyFilter(memoryBuffer.subarray(ptr, ptr + size), "sepia", value),
+    _saturation: (ptr, size, value) => applyFilter(memoryBuffer.subarray(ptr, ptr + size), "saturation", value),
+    _temperature: (ptr, size, value) => applyFilter(memoryBuffer.subarray(ptr, ptr + size), "temperature", value),
+    _fade: (ptr, size, value) => applyFilter(memoryBuffer.subarray(ptr, ptr + size), "fade", value),
+    _solarize: (ptr, size, value) => applyFilter(memoryBuffer.subarray(ptr, ptr + size), "solarize", value),
+  };
+}
 
 console.log("[WORKER] WebAssembly worker initialized");

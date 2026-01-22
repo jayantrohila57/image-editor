@@ -31,6 +31,7 @@
     "start": "next start",
     "build:wasm": "build-wasm.bat",
     "build:wasm:unix": "bash build-wasm.sh",
+    "build:wasm:optional": "bash build-wasm.sh 2>/dev/null || echo 'WASM build not available'",
     "lint": "biome check",
     "format": "biome format --write"
   },

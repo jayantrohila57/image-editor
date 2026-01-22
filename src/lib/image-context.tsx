@@ -134,21 +134,29 @@ export function ImageEditorProvider({
         worker.addEventListener("message", (e) => {
           if (e.data.type === "init") {
             if (e.data.success) {
+              const mode = e.data.mode || "WebAssembly";
               console.log(
-                "[DEBUG] [Context] Worker WASM initialized successfully",
+                `[DEBUG] [Context] Worker initialized successfully (${mode})`,
               );
               setWorkerReady(true);
+              const isFallback = mode === "JavaScript fallback";
               setDebugInfo((prev) => [
                 ...prev,
-                `[${new Date().toLocaleTimeString()}] WASM Engine loaded`,
+                `[${new Date().toLocaleTimeString()}] ${mode === "WebAssembly" ? "WASM Engine" : "JavaScript Filter Engine"} loaded`,
               ]);
+              if (isFallback) {
+                toast.info("Running in JavaScript mode (WASM unavailable)", {
+                  description: "Filters will work with JavaScript implementation",
+                  duration: 5000,
+                });
+              }
             } else {
               console.error(
-                "[ERROR] [Context] Worker WASM initialization failed:",
+                "[ERROR] [Context] Worker initialization failed:",
                 e.data.error,
               );
-              setError(`WASM failed: ${e.data.error}`);
-              toast.error("WASM acceleration unavailable");
+              setError(`Initialization failed: ${e.data.error}`);
+              toast.error("Failed to initialize filter engine");
             }
           }
         });
