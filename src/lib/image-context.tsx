@@ -128,9 +128,7 @@ export function ImageEditorProvider({
     if (!workerRef.current) {
       try {
         console.log("[DEBUG] [Context] Initializing new WebAssembly worker...");
-        const worker = new Worker("/wasm/worker-enhanced.js", {
-          type: "module",
-        });
+        const worker = new Worker("/wasm/worker-enhanced.js");
 
         // Add initialization handler
         worker.addEventListener("message", (e) => {
@@ -383,7 +381,25 @@ export function ImageEditorProvider({
           console.log(
             `[DEBUG] [Context] Filter ${e.data.type} completed successfully for job #${job}`,
           );
-          img.data.set(new Uint8Array(e.data.buffer));
+          try {
+            const processedData = new Uint8Array(e.data.buffer);
+            if (processedData.length !== img.data.length) {
+              console.error(
+                `[ERROR] [Context] Buffer size mismatch: got ${processedData.length}, expected ${img.data.length}`,
+              );
+              throw new Error(
+                `Buffer size mismatch: ${processedData.length} vs ${img.data.length}`,
+              );
+            }
+            img.data.set(processedData);
+          } catch (err) {
+            console.error(`[ERROR] [Context] Failed to set image data:`, err);
+            setError(
+              `Failed to apply filter: ${err instanceof Error ? err.message : String(err)}`,
+            );
+            run();
+            return;
+          }
           run();
           setDebugInfo((prev) => [
             ...prev,

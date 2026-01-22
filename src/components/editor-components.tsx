@@ -93,18 +93,23 @@ Editor.Canvas = function EditorCanvas() {
             )}
 
             {!loading && !error && (
-              <div className="relative group">
+              <div className="relative group cursor-pointer">
                 <input
                   type="file"
                   accept="image/*"
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  style={{ pointerEvents: "auto" }}
                   onChange={(e) => {
                     if (e.target.files?.[0]) {
                       loadImage(e.target.files[0]);
                     }
                   }}
+                  onClick={(e) => {
+                    // Reset the input value to allow re-selecting the same file
+                    e.currentTarget.value = "";
+                  }}
                 />
-                <div className="border-2 border-dashed border-muted-foreground/25 rounded-2xl p-12 text-center transition-all group-hover:border-primary group-hover:bg-primary/5">
+                <div className="border-2 border-dashed border-muted-foreground/25 rounded-2xl p-12 text-center transition-all group-hover:border-primary group-hover:bg-primary/5 pointer-events-none">
                   <div className="mb-4 flex justify-center">
                     <div className="p-4 bg-primary/10 rounded-full text-primary group-hover:scale-110 transition-transform">
                       <Upload className="h-8 w-8" />
