@@ -11,7 +11,15 @@ async function loadWasm() {
   try {
     console.log("[WORKER] Initializing WebAssembly via image.js wrapper...");
 
-    mod = await Module();
+    mod = await Module({
+      locateFile: (path) => {
+        if (path.endsWith(".wasm")) {
+          console.log("[WORKER] Redirecting WASM load to /wasm/image.wasm");
+          return "/wasm/image.wasm";
+        }
+        return path;
+      },
+    });
 
     _isInitialized = true;
     console.log("[WORKER] WebAssembly module initialized successfully");

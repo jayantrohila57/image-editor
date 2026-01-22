@@ -154,7 +154,10 @@ Editor.Canvas = function EditorCanvas() {
                     <CardContent className="p-3 pt-0">
                       <ScrollArea className="h-32 text-[10px] font-mono leading-tight">
                         {debugInfo.map((line, i) => (
-                          <div key={i} className="mb-1 text-muted-foreground">
+                          <div
+                            key={`debug-${i}-${line.slice(0, 20)}`}
+                            className="mb-1 text-muted-foreground"
+                          >
                             {line}
                           </div>
                         ))}
@@ -180,7 +183,10 @@ Editor.Canvas = function EditorCanvas() {
                     <CardContent className="p-3 pt-0">
                       <ScrollArea className="h-32 text-[10px] font-mono leading-tight">
                         {filterHistory.map((line, i) => (
-                          <div key={i} className="mb-1 text-muted-foreground">
+                          <div
+                            key={`history-${i}-${line.slice(0, 20)}`}
+                            className="mb-1 text-muted-foreground"
+                          >
                             {line}
                           </div>
                         ))}
