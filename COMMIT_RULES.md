@@ -8,7 +8,7 @@ This repository follows **Semantic Versioning** with phase-based development. Ea
 
 ## Version System
 
-### Current Version: v0.1.0
+### Current Version: v0.1.1
 
 ### Version Pattern
 
@@ -187,12 +187,100 @@ ai: run commit rules
    - Only runs when C++ files are modified
    - Ensures compiled binary is up-to-date
 
-2. **Markdown Files Validation**
+2. **Markdown Files Validation and Updates**
 
-   - Scans all `.md` files for consistency
-   - Validates documentation structure and formatting
-   - Checks for broken links and references
-   - Ensures all docs follow project standards
+   - Scans all `.md` files for consistency and completeness
+   - Validates documentation structure and formatting standards
+   - Checks for broken links and cross-references between files
+   - Ensures all docs follow project documentation standards
+   - **CRITICAL**: Updates all documentation files to reflect current state
+
+   **Required Documentation Files for Updates:**
+
+   For **every release** (patch, minor, or major), these files MUST be reviewed and updated:
+
+   1. **README.md** - Main project documentation
+
+      - Update current state and implemented features
+      - Update version badges and links
+      - Ensure all sections reflect current functionality
+      - Update browser compatibility if needed
+
+   2. **CHANGELOG.md** - Version history and changes
+
+      - Add new version section with all changes
+      - Include breaking changes, features, and fixes
+      - Update version history table
+      - Add migration guides if needed
+
+   3. **CONTRIBUTING.md** - Development guidelines
+
+      - Update if new development processes are added
+      - Update technology stack or dependencies
+      - Update build instructions if changed
+      - Update testing requirements
+
+   4. **SECURITY.md** - Security policy and procedures
+
+      - Update if new security considerations are introduced
+      - Update supported versions table
+      - Update security features section
+
+   5. **FAQ.md** - Frequently asked questions
+
+      - Add answers for common issues with new features
+      - Update troubleshooting sections
+      - Update browser compatibility information
+      - Add new feature explanations
+
+   6. **ROADMAP.md** - Future development plans
+
+      - Update progress on completed features
+      - Adjust timeline if needed
+      - Update priority of upcoming features
+      - Mark completed items as done
+
+   7. **DEVELOPMENT_PLAN.md** - Detailed development tracking
+
+      - Mark completed tasks and milestones
+      - Update phase completion status
+      - Update implementation progress
+      - Adjust timelines based on actual progress
+
+   8. **CODE_OF_CONDUCT.md** - Community guidelines
+
+      - Update if community processes change
+      - Update contact information if needed
+      - Review and update enforcement procedures
+
+   9. **LICENSE** - Legal information
+
+      - Update copyright year for new releases
+      - Ensure license information is current
+
+   10. **Package Documentation** (package.json)
+       - Update version number
+       - Update description if features significantly change
+       - Update keywords if new major features are added
+       - Update repository links if needed
+
+   **Documentation Update Workflow:**
+
+   ```bash
+   # Before any release, run this comprehensive check:
+
+   # 1. Check all documentation files for consistency
+   find . -name "*.md" -exec echo "Checking: {}" \;
+
+   # 2. Update version references across all files
+   grep -r "v[0-9]\+\.[0-9]\+\.[0-9]\+" . --include="*.md"
+
+   # 3. Validate all markdown links and references
+   # (Manual check for now, automated tools can be added)
+
+   # 4. Ensure all documentation reflects current implementation
+   # Compare README.md features with actual implemented features
+   ```
 
 3. **Development Plan Progress Check**
 
@@ -201,12 +289,20 @@ ai: run commit rules
    - Checks phase completion status
    - Validates implementation progress
 
-4. **Documentation Updates**
+4. **Comprehensive Documentation Updates**
 
-   - Updates version numbers in relevant files
+   - Updates version numbers in ALL relevant files
    - Marks completed tasks in DEVELOPMENT_PLAN.md
-   - Updates README.md with current state
-   - Updates any other documentation files as needed
+   - Updates README.md with current state and new features
+   - Updates CHANGELOG.md with detailed version changes
+   - Updates CONTRIBUTING.md if development processes change
+   - Updates FAQ.md with new feature information
+   - Updates ROADMAP.md with progress and timeline adjustments
+   - Updates SECURITY.md if security considerations change
+   - Updates CODE_OF_CONDUCT.md if community processes change
+   - Updates LICENSE copyright year for new releases
+   - Updates package.json version and metadata
+   - Ensures ALL markdown files are consistent and current
 
 5. **Code Formatting**
 
@@ -442,37 +538,164 @@ For bug fixes and minor improvements:
 
 ### For Every Release
 
-Always update these files in order:
+**CRITICAL**: ALL documentation files must be reviewed and updated for consistency before any release. This ensures the project maintains professional open-source standards and provides accurate information to users and contributors.
 
-1. **README.md** - Update current state and implemented features
-2. **DEVELOPMENT_PLAN.md** - Update phase completion status if applicable
-3. **package.json** - Version number (automated with bump commit)
+#### Required Documentation Files (Must be updated in order):
+
+1. **README.md** - Main project documentation
+
+   - Update current state and implemented features
+   - Update version badges and links
+   - Ensure all sections reflect current functionality
+   - Update browser compatibility if needed
+   - Update feature lists and project status
+
+2. **CHANGELOG.md** - Version history and changes
+
+   - Add new version section with all changes
+   - Include breaking changes, features, and fixes
+   - Update version history table
+   - Add migration guides if needed
+   - Update performance improvements section
+
+3. **CONTRIBUTING.md** - Development guidelines
+
+   - Update if new development processes are added
+   - Update technology stack or dependencies
+   - Update build instructions if changed
+   - Update testing requirements
+   - Update WebAssembly build instructions
+
+4. **SECURITY.md** - Security policy and procedures
+
+   - Update if new security considerations are introduced
+   - Update supported versions table
+   - Update security features section
+   - Review security best practices
+
+5. **FAQ.md** - Frequently asked questions
+
+   - Add answers for common issues with new features
+   - Update troubleshooting sections
+   - Update browser compatibility information
+   - Add new feature explanations
+   - Update performance-related questions
+
+6. **ROADMAP.md** - Future development plans
+
+   - Update progress on completed features
+   - Adjust timeline if needed
+   - Update priority of upcoming features
+   - Mark completed items as done
+   - Update release estimates
+
+7. **DEVELOPMENT_PLAN.md** - Detailed development tracking
+
+   - Mark completed tasks and milestones
+   - Update phase completion status
+   - Update implementation progress
+   - Adjust timelines based on actual progress
+   - Update task priorities
+
+8. **CODE_OF_CONDUCT.md** - Community guidelines
+
+   - Update if community processes change
+   - Update contact information if needed
+   - Review and update enforcement procedures
+   - Ensure current year in copyright
+
+9. **LICENSE** - Legal information
+
+   - Update copyright year for new releases
+   - Ensure license information is current
+   - Verify license is appropriate for project state
+
+10. **Package Documentation** (package.json)
+    - Update version number
+    - Update description if features significantly change
+    - Update keywords if new major features are added
+    - Update repository links if needed
+    - Review homepage and author information
+
+#### GitHub Templates (Update if processes change):
+
+11. **.github/PULL_REQUEST_TEMPLATE.md**
+
+    - Update if review processes change
+    - Add new testing requirements
+    - Update checklist items
+
+12. **.github/ISSUE_TEMPLATE/BUG_REPORT.md**
+
+    - Add new debugging steps for new features
+    - Update environment requirements
+    - Update troubleshooting information
+
+13. **.github/ISSUE_TEMPLATE/FEATURE_REQUEST.md**
+
+    - Add new feature categories
+    - Update implementation considerations
+    - Update priority guidelines
+
+14. **.github/ISSUE_TEMPLATE/config.yml**
+    - Update links and contacts
+    - Add new issue categories if needed
 
 ### Documentation Consistency Requirements
 
 **CRITICAL**: All documentation files must show consistent version information:
 
-- **package.json version** must match **DEVELOPMENT_PLAN.md current state**
-- **README.md** must reflect current implemented features
+- **package.json version** must match **all documentation version references**
+- **README.md** must reflect current implemented features accurately
+- **CHANGELOG.md** must include all changes in the current release
+- **ROADMAP.md** must align with DEVELOPMENT_PLAN.md progress
 - **Version tag** must point to commit containing ALL documentation updates
-- **Version verification checklist**:
+- **All markdown files** must have consistent version references
 
-  ```bash
-  # Check package.json version
-  grep '"version"' package.json
+#### Version Verification Checklist:
 
-  # Check DEVELOPMENT_PLAN.md status
-  grep "Current State Analysis" DEVELOPMENT_PLAN.md
+```bash
+# Check package.json version
+grep '"version"' package.json
 
-  # Verify README.md reflects current state
-  grep "## Current State" README.md
+# Check version references in all markdown files
+grep -r "v[0-9]\+\.[0-9]\+\.[0-9]\+" . --include="*.md"
 
-  # Verify tag points to latest commit
-  git show v<version> --oneline
-  ```
+# Check README.md reflects current state
+grep "## Current State" README.md
+grep "✅" README.md  # Implemented features
 
-- **If inconsistencies found**: Update documentation BEFORE creating final tag
-- **Never push**: Inconsistent version information across files
+# Check CHANGELOG.md includes current version
+grep "## \[0\.1\.[0-9]\+" CHANGELOG.md
+
+# Verify tag points to latest commit
+git show v<version> --oneline
+
+# Check all markdown files exist and are accessible
+find . -name "*.md" -exec echo "File: {}" \;
+```
+
+#### Documentation Quality Standards:
+
+- **No broken links** between documentation files
+- **Consistent formatting** across all markdown files
+- **Current version references** in all relevant files
+- **Accurate feature descriptions** matching implementation
+- **Up-to-date contact information** and links
+- **Proper markdown syntax** and structure
+- **Cross-references** between related documentation
+
+#### Release Documentation Workflow:
+
+1. **Before Code Changes**: Review current documentation state
+2. **During Development**: Update documentation as features are implemented
+3. **Before Release**: Comprehensive documentation review and updates
+4. **Release Day**: Final documentation validation
+5. **Post-Release**: Update any documentation that was missed
+
+**If inconsistencies found**: Update documentation BEFORE creating final tag
+**Never push**: Inconsistent version information across files
+**Always verify**: All documentation reflects current implementation state
 
 ### README.md Format
 
@@ -660,17 +883,31 @@ npm version major
 - [ ] Linting passes (`pnpm run lint`)
 - [ ] Build succeeds (`pnpm run build`)
 - [ ] WASM builds (if C++ files changed)
-- [ ] Documentation is updated if needed
+- [ ] Relevant documentation is updated if needed
 - [ ] Commit message follows format
+- [ ] All markdown files are consistent and accurate
+- [ ] Version references are consistent across files
 
 ### Before Release
 
 - [ ] All quality gates pass
-- [ ] README.md is updated
-- [ ] DEVELOPMENT_PLAN.md is updated if phase complete
-- [ ] Version is bumped in package.json
-- [ ] Git tag is created
+- [ ] **ALL** markdown files are reviewed and updated:
+  - [ ] README.md is updated with current features
+  - [ ] CHANGELOG.md includes all changes for this release
+  - [ ] CONTRIBUTING.md reflects current development processes
+  - [ ] SECURITY.md is up-to-date with supported versions
+  - [ ] FAQ.md includes new feature information
+  - [ ] ROADMAP.md shows current progress
+  - [ ] DEVELOPMENT_PLAN.md marks completed tasks
+  - [ ] CODE_OF_CONDUCT.md is current
+  - [ ] LICENSE copyright year is updated
+  - [ ] GitHub templates are current if processes changed
+- [ ] package.json version is bumped
+- [ ] All documentation version references are consistent
+- [ ] Git tag is created and points to correct commit
 - [ ] Tag is pushed to remote
+- [ ] Documentation links are validated (no broken links)
+- [ ] Cross-references between files are accurate
 
 ## History & Context
 
@@ -681,4 +918,16 @@ This commit system is based on:
 - **Conventional Commits** for clear history
 - **WebAssembly architecture** for high-performance image processing
 
-The current version (v0.1.0) represents the initial foundation with basic image filters, WebAssembly processing, and modern UI ready for Phase 1 implementation.
+The current version (v0.1.1) represents the initial foundation with basic image filters, WebAssembly processing, modern UI, and comprehensive open-source documentation ready for Phase 1 implementation.
+
+## Documentation-First Development
+
+This project follows a **documentation-first** approach where:
+
+1. **All releases require comprehensive documentation updates**
+2. **Markdown files are treated as code** - they must be versioned and maintained
+3. **Consistency across all documentation is mandatory**
+4. **Documentation accuracy is validated before releases**
+5. **Professional open-source standards are maintained**
+
+This ensures the project provides excellent experience for users, contributors, and maintainers while maintaining high-quality documentation standards throughout development.

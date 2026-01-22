@@ -1,6 +1,31 @@
 # WebAssembly Image Editor
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](https://github.com/your-username/wasm-image-editor/releases)
+[![WebAssembly](https://img.shields.io/badge/WebAssembly-654FF0?style=flat&logo=webassembly)](https://webassembly.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
+
 A high-performance web-based image editor built with Next.js and WebAssembly. This application demonstrates the power of combining modern web technologies with low-level performance optimizations for smooth image processing directly in the browser.
+
+## 🚀 Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/your-username/wasm-image-editor.git
+cd wasm-image-editor
+
+# Install dependencies
+pnpm install
+
+# Build WebAssembly (required)
+pnpm run build:wasm
+
+# Start development server
+pnpm dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to start editing images!
 
 ## Features
 
@@ -44,21 +69,79 @@ A high-performance web-based image editor built with Next.js and WebAssembly. Th
 | Fade        | 0-1         | Adds white fade effect      |
 | Solarize    | 0-1         | Creates solarization effect |
 
-## Getting Started
+## 📖 Documentation
 
-First, run the development server:
+- **[Getting Started Guide](#getting-started)** - Quick setup and installation
+- **[User Guide](#usage)** - How to use the image editor
+- **[Contributing Guide](CONTRIBUTING.md)** - How to contribute to the project
+- **[FAQ](FAQ.md)** - Frequently asked questions
+- **[Changelog](CHANGELOG.md)** - Version history and changes
+- **[Roadmap](ROADMAP.md)** - Future development plans
+- **[Security Policy](SECURITY.md)** - Security information and reporting
+- **[Code of Conduct](CODE_OF_CONDUCT.md)** - Community guidelines
+
+## 🛠️ Getting Started
+
+### Prerequisites
+
+- **Node.js 18+** - [Download Node.js](https://nodejs.org/)
+- **pnpm** (recommended) or npm/yarn - [Install pnpm](https://pnpm.io/installation)
+- **Git** - [Install Git](https://git-scm.com/)
+
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/your-username/wasm-image-editor.git
+   cd wasm-image-editor
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   pnpm install
+   # or
+   npm install
+   ```
+
+3. **Build WebAssembly**
+
+   ```bash
+   # On Windows
+   pnpm run build:wasm
+
+   # On Unix systems (macOS/Linux)
+   pnpm run build:wasm:unix
+   ```
+
+4. **Start development server**
+
+   ```bash
+   pnpm dev
+   # or
+   npm run dev
+   ```
+
+5. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+### Development Commands
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+# Development
+pnpm dev              # Start development server
+pnpm build            # Build for production
+pnpm start            # Start production server
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# WebAssembly
+pnpm run build:wasm    # Build WebAssembly (Windows)
+pnpm run build:wasm:unix # Build WebAssembly (Unix)
+
+# Code Quality
+pnpm run lint         # Check for linting issues
+pnpm run format       # Format code with Biome
+```
 
 ## Usage
 
@@ -109,21 +192,100 @@ Image processing runs in a separate Web Worker thread to:
 └── package.json
 ```
 
-## Learn More
+## 🌟 Show Your Support
 
-To learn more about the technologies used:
+If you find this project useful, please consider:
 
-- [Next.js Documentation](https://nextjs.org/docs) - Learn about Next.js features and API
-- [WebAssembly](https://webassembly.org/) - Learn about WASM technology
-- [Emscripten](https://emscripten.org/) - C++ to WASM compiler
-- [shadcn/ui](https://ui.shadcn.com/) - Component library documentation
+- ⭐ **Star the repository** - It helps others discover the project
+- 🐛 **Report issues** - Help us improve by reporting bugs
+- 💡 **Suggest features** - Share your ideas for new features
+- 📝 **Improve documentation** - Help make the docs better
+- 🤝 **Contribute code** - See our [Contributing Guide](CONTRIBUTING.md)
 
-## Deploy on Vercel
+## 🤝 Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+We welcome contributions of all kinds! Whether you're fixing a bug, adding a feature, or improving documentation, we'd love your help.
 
-Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Quick Ways to Contribute
 
-## License
+- **Report Bugs**: [Open an issue](https://github.com/your-username/wasm-image-editor/issues)
+- **Request Features**: [Start a discussion](https://github.com/your-username/wasm-image-editor/discussions)
+- **Submit Pull Requests**: See our [Contributing Guide](CONTRIBUTING.md)
+- **Improve Docs**: Help us improve documentation
 
-MIT License - feel free to use this project for learning and experimentation.
+### Development Setup
+
+```bash
+# Fork the repository
+git clone https://github.com/your-username/wasm-image-editor.git
+cd wasm-image-editor
+
+# Install dependencies and build
+pnpm install
+pnpm run build:wasm
+
+# Start development
+pnpm dev
+```
+
+Read our [Contributing Guide](CONTRIBUTING.md) for detailed instructions.
+
+## 📊 Project Status
+
+### Current Version: v0.1.1
+
+- ✅ **Core Features**: 10 professional filters with real-time preview
+- ✅ **Infrastructure**: WebAssembly + Web Worker with loading states
+- ✅ **Reliability**: Error Boundaries and processing canvas stabilization
+- ✅ **Logging**: Real-time system log and operation history
+- ✅ **Export**: Core download functionality (PNG)
+- 🚧 **In Development**: Multi-format export, undo/redo, transformations
+- 📋 **Planned**: Presets, batch processing, advanced color tools
+
+### Browser Compatibility
+
+| Browser | Version | Status          |
+| ------- | ------- | --------------- |
+| Chrome  | 57+     | ✅ Full Support |
+| Firefox | 52+     | ✅ Full Support |
+| Safari  | 11+     | ✅ Full Support |
+| Edge    | 16+     | ✅ Full Support |
+
+## 🗺️ Roadmap
+
+Want to know what's coming next? Check out our detailed [Roadmap](ROADMAP.md):
+
+### Upcoming Features
+
+- **v0.2.0**: Image transformations (rotate, crop, resize)
+- **v0.3.0**: Advanced filters and creative effects
+- **v0.4.0**: Batch processing and automation
+- **v0.5.0**: Professional tools and layer system
+- **v1.0.0**: Production release with enterprise features
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE) - feel free to use it for personal and commercial projects.
+
+## 🔗 Links
+
+- **[Live Demo](https://your-username.github.io/wasm-image-editor/)** _(coming soon)_
+- **[GitHub Repository](https://github.com/your-username/wasm-image-editor)**
+- **[Report Issues](https://github.com/your-username/wasm-image-editor/issues)**
+- **[Request Features](https://github.com/your-username/wasm-image-editor/discussions)**
+- **[View Changelog](CHANGELOG.md)**
+- **[Security Policy](SECURITY.md)**
+
+## 🙏 Acknowledgments
+
+- **[Next.js](https://nextjs.org/)** - The React framework for production
+- **[WebAssembly](https://webassembly.org/)** - The web's binary instruction format
+- **[Emscripten](https://emscripten.org/)** - C++ to WebAssembly compiler
+- **[shadcn/ui](https://ui.shadcn.com/)** - Beautiful component library
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
+
+---
+
+**Built with ❤️ using WebAssembly and Next.js**
+
+_If you have any questions or need help, don't hesitate to [open an issue](https://github.com/your-username/wasm-image-editor/issues) or [start a discussion](https://github.com/your-username/wasm-image-editor/discussions)._

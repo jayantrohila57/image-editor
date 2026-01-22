@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentation
+    url: https://github.com/your-username/wasm-image-editor/blob/main/README.md
+    about: Check our documentation for guides and information
+  - name: ❓ Questions & Discussions
+    url: https://github.com/your-username/wasm-image-editor/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 🐛 Report a Bug
+    url: https://github.com/your-username/wasm-image-editor/issues/new?assignees=&labels=bug&template=BUG_REPORT.md
+    about: Report a bug or unexpected behavior
+  - name: 💡 Request a Feature
+    url: https://github.com/your-username/wasm-image-editor/issues/new?assignees=&labels=enhancement&template=FEATURE_REQUEST.md
+    about: Suggest a new feature or improvement
+  - name: 🔒 Security Issue
+    url: https://github.com/your-username/wasm-image-editor/blob/main/SECURITY.md
+    about: For security vulnerabilities, please follow our security policy
